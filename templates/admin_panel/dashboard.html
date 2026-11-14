@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Admin overview | SideBySide{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'marketplace/admin.css' %}">{% endblock %}
+{% block content %}
+<section class="admin-shell">
+  <header class="admin-heading">
+    <div><p class="eyebrow">SIDE BY SIDE / OPERATIONS</p><h1>Admin overview</h1><p>Review platform activity and handle items needing attention.</p></div>
+    <a class="button button-dark" href="{% url 'admin:index' %}">Open Django Admin <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <div class="admin-stats">
+    <a class="admin-stat" href="{% url 'admin:auth_user_changelist' %}"><span>Registered users</span><strong>{{ user_count }}</strong><small>All accounts</small></a>
+    <a class="admin-stat" href="{% url 'admin:marketplace_companionprofile_changelist' %}"><span>Live listings</span><strong>{{ live_listing_count }}</strong><small>Approved and unpaused</small></a>
+    <a class="admin-stat admin-stat-alert" href="{% url 'admin:marketplace_companionprofile_changelist' %}?status=pending"><span>Awaiting review</span><strong>{{ pending_profile_count }}</strong><small>Companion applications</small></a>
+    <a class="admin-stat" href="{% url 'admin:marketplace_booking_changelist' %}"><span>Upcoming bookings</span><strong>{{ upcoming_booking_count }}</strong><small>Accepted sessions</small></a>
+    <a class="admin-stat admin-stat-alert" href="{% url 'admin:marketplace_report_changelist' %}?status=open"><span>Open reports</span><strong>{{ open_report_count }}</strong><small>Safety review required</small></a>
+  </div>
+
+  <div class="admin-columns">
+    <section class="admin-panel">
+      <header class="admin-panel-heading"><div><p class="eyebrow">SAFETY & TRUST</p><h2>Companion review queue</h2></div><a href="{% url 'admin:marketplace_companionprofile_changelist' %}">View all <span aria-hidden="true">↗</span></a></header>
+      {% for profile in review_queue %}
+        <article class="admin-row"><div><strong>{{ profile.display_name }}</strong><small>{{ profile.city }} · {{ profile.created_at|date:"M j, Y" }}</small></div><a class="admin-row-action" href="{% url 'admin:marketplace_companionprofile_change' profile.pk %}">Review</a></article>
+      {% empty %}<p class="admin-empty">No companion applications are waiting for review.</p>{% endfor %}
+    </section>
+
+    <section class="admin-panel">
+      <header class="admin-panel-heading"><div><p class="eyebrow">MEMBERSHIPS</p><h2>Listed plan mix</h2></div><a href="{% url 'admin:marketplace_companionprofile_changelist' %}">Manage listings <span aria-hidden="true">↗</span></a></header>
+      {% for item in plan_mix %}<div class="plan-row"><span>{{ item.label }}</span><strong>{{ item.total }}</strong></div>{% empty %}<p class="admin-empty">No companion listings yet.</p>{% endfor %}
+      <p class="admin-disclaimer">Plan mix reflects profile selections, not paid or active subscriptions.</p>
+    </section>
+  </div>
+
+  <div class="admin-columns admin-columns-wide">
+    <section class="admin-panel">
+      <header class="admin-panel-heading"><div><p class="eyebrow">BOOKING ACTIVITY</p><h2>Requests and upcoming sessions</h2></div><a href="{% url 'admin:marketplace_booking_changelist' %}">View all <span aria-hidden="true">↗</span></a></header>
+      {% for booking in attention_bookings %}<article class="admin-row"><div><strong>{{ booking.client.username }} with {{ booking.companion.display_name }}</strong><small>{{ booking.date|date:"M j, Y" }} · {{ booking.activity.name }} · {{ booking.get_status_display }}</small></div><a class="admin-row-action" href="{% url 'admin:marketplace_booking_change' booking.pk %}">Open</a></article>{% empty %}<p class="admin-empty">No active booking requests or upcoming sessions.</p>{% endfor %}
+    </section>
+    <section class="admin-panel">
+      <header class="admin-panel-heading"><div><p class="eyebrow">REPORTS</p><h2>Safety reports</h2></div><a href="{% url 'admin:marketplace_report_changelist' %}">View all <span aria-hidden="true">↗</span></a></header>
+      {% for report in open_reports %}<article class="admin-row"><div><strong>{{ report.get_status_display }} · {{ report.target_user.username }}</strong><small>{{ report.reason|truncatechars:76 }} · {{ report.created_at|date:"M j, Y" }}</small></div><a class="admin-row-action" href="{% url 'admin:marketplace_report_change' report.pk %}">Open</a></article>{% empty %}<p class="admin-empty">No open safety reports.</p>{% endfor %}
+    </section>
+  </div>
+</section>
+{% endblock %}
