@@ -1,6 +1,11 @@
+from datetime import datetime, time, timedelta
+
+from datetime import datetime, time, timedelta
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 from django.utils.text import slugify
 from django.utils import timezone
 
@@ -15,6 +20,23 @@ class ActivityTag(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class AccountProfile(models.Model):
+    class Role(models.TextChoices):
+        CLIENT = "client", "Client"
+        COMPANION = "companion", "Companion"
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="marketplace_account")
+    role = models.CharField(max_length=12, choices=Role.choices, default=Role.CLIENT, db_index=True)
+    phone = models.CharField(max_length=24, blank=True)
+    email_verified = models.BooleanField(default=False)
+    phone_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user} ({self.get_role_display()})"
 
 
 class CompanionProfile(models.Model):
@@ -135,10 +157,46 @@ class Booking(models.Model):
         errors = {}
         if self.date and self.date < timezone.localdate():
             errors["date"] = "Choose today or a future date."
+        if self.date and self.date == timezone.localdate() and self.start_time:
+            if self.start_time <= timezone.localtime().time():
+                errors["start_time"] = "Choose a start time that is still in the future."
         if self.companion_id and self.hours and self.hours < self.companion.min_hours:
             errors["hours"] = f"This companion requires at least {self.companion.min_hours} hours."
+        if self.hours is not None and self.hours < 1:
+            errors["hours"] = "Booking duration must be at least one hour."
         if self.activity_id and self.companion_id and not self.companion.activities.filter(pk=self.activity_id).exists():
             errors["activity"] = "Choose an activity offered by this companion."
+        if self.client_id and self.companion_id and Block.objects.filter(
+            Q(blocker_id=self.client_id, target_id=self.companion.user_id)
+            | Q(blocker_id=self.companion.user_id, target_id=self.client_id)
+        ).exists():
+            errors["companion"] = "This booking cannot be requested because one account has blocked the other."
+        if self.companion_id and self.date and self.start_time and self.hours and self.hours > 0:
+            start_minutes = self.start_time.hour * 60 + self.start_time.minute
+            end_minutes = start_minutes + self.hours * 60
+            if end_minutes > 24 * 60:
+                errors["hours"] = "A booking must end before midnight."
+            else:
+                end_time = time(end_minutes // 60 % 24, end_minutes % 60)
+                availability = self.companion.availability.filter(weekday=self.date.weekday())
+                if not availability.exists():
+                    errors["start_time"] = "This companion has not set availability for that day."
+                elif not availability.filter(start_time__lte=self.start_time, end_time__gte=end_time).exists():
+                    errors["start_time"] = "This time falls outside the companion's available hours."
+
+                booking_start = datetime.combine(self.date, self.start_time)
+                booking_end = booking_start + timedelta(hours=self.hours)
+                accepted = Booking.objects.filter(
+                    companion=self.companion,
+                    date=self.date,
+                    status=self.Status.ACCEPTED,
+                ).exclude(pk=self.pk)
+                for existing in accepted:
+                    existing_start = datetime.combine(existing.date, existing.start_time)
+                    existing_end = existing_start + timedelta(hours=existing.hours)
+                    if booking_start < existing_end and booking_end > existing_start:
+                        errors["start_time"] = "This companion already has an accepted booking during that time."
+                        break
         if errors:
             raise ValidationError(errors)
 
@@ -170,3 +228,23 @@ class Report(models.Model):
     reason = models.TextField(max_length=800)
     status = models.CharField(max_length=12, choices=Status.choices, default=Status.OPEN)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        if self.reporter_id and self.target_user_id and self.reporter_id == self.target_user_id:
+            raise ValidationError("You cannot report your own account.")
+
+
+class Block(models.Model):
+    blocker = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="blocks_created")
+    target = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="blocks_received")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=("blocker", "target"), name="unique_user_block"),
+            models.CheckConstraint(condition=~models.Q(blocker=models.F("target")), name="block_other_user_only"),
+        ]
+
+    def clean(self):
+        if self.blocker_id and self.target_id and self.blocker_id == self.target_id:
+            raise ValidationError("You cannot block your own account.")

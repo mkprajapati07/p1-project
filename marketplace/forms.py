@@ -1,17 +1,25 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from django.forms import inlineformset_factory
 from django.utils import timezone
 
-from .models import ActivityTag, Booking, CompanionProfile
+from .models import AccountProfile, ActivityTag, Availability, Booking, CompanionProfile, Report
 
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(required=True)
+    role = forms.ChoiceField(choices=AccountProfile.Role.choices, widget=forms.RadioSelect)
 
     class Meta:
-        model = User
-        fields = ("username", "email", "password1", "password2")
+        model = get_user_model()
+        fields = ("username", "email", "role", "password1", "password2")
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip()
+        if get_user_model().objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email
 
 
 class BookingRequestForm(forms.ModelForm):
@@ -45,6 +53,14 @@ class BookingRequestForm(forms.ModelForm):
         if commit:
             booking.save()
         return booking
+
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ("reason",)
+        widgets = {"reason": forms.Textarea(attrs={"rows": 3, "maxlength": 800})}
+        labels = {"reason": "What should our safety team review?"}
 
 
 class CompanionProfileForm(forms.ModelForm):
@@ -93,3 +109,18 @@ class CompanionProfileForm(forms.ModelForm):
         if activities.count() > 2:
             raise forms.ValidationError("The Basic plan allows up to 2 activity categories.")
         return activities
+
+
+AvailabilityFormSet = inlineformset_factory(
+    CompanionProfile,
+    Availability,
+    fields=("weekday", "start_time", "end_time"),
+    extra=7,
+    can_delete=True,
+    max_num=21,
+    validate_max=True,
+    widgets={
+        "start_time": forms.TimeInput(attrs={"type": "time"}),
+        "end_time": forms.TimeInput(attrs={"type": "time"}),
+    },
+)

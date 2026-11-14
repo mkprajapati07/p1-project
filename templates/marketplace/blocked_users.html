@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Blocked accounts | SideBySide{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'marketplace/account-dashboard.css' %}">{% endblock %}
+{% block content %}
+<section class="account-dashboard">
+  <a class="back-link" href="{% url 'dashboard' %}"><span>←</span> Dashboard</a>
+  <header class="account-heading"><div><p class="eyebrow">YOUR SAFETY SETTINGS</p><h1>Blocked accounts</h1><p>Blocked accounts are hidden from your discovery and cannot book each other.</p></div></header>
+  <section class="account-panel">
+    {% for block in blocks %}<article class="account-row"><div><strong>{{ block.target.username }}</strong><small>Blocked {{ block.created_at|date:"M j, Y" }}</small></div><form method="post" action="{% url 'unblock_user' block.id %}">{% csrf_token %}<button class="button button-outline button-small" type="submit">Unblock</button></form></article>{% empty %}<p class="account-empty">You have not blocked any accounts.</p>{% endfor %}
+  </section>
+</section>
+{% endblock %}

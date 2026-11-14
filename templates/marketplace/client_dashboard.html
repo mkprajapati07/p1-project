@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Your dashboard | SideBySide{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'marketplace/account-dashboard.css' %}">{% endblock %}
+{% block content %}
+<section class="account-dashboard">
+  <header class="account-heading"><div><p class="eyebrow">YOUR SIDE BY SIDE</p><h1>Welcome, {{ user.username }}.</h1><p>Your plans and new experiences, all in one place.</p></div><a class="button button-dark" href="{% url 'home' %}#companions">Explore companions <span aria-hidden="true">↗</span></a></header>
+  <div class="account-stats"><div><span>Awaiting reply</span><strong>{{ pending_count }}</strong></div><div><span>Upcoming plans</span><strong>{{ upcoming_count }}</strong></div><div><span>Completed plans</span><strong>{{ completed_count }}</strong></div></div>
+  <section class="account-panel"><header><div><p class="eyebrow">ON YOUR CALENDAR</p><h2>Upcoming plans</h2></div><a href="{% url 'my_plans' %}">All my plans <span aria-hidden="true">↗</span></a></header>
+    {% for booking in upcoming %}<article class="account-row"><div><strong>{{ booking.companion.display_name }}</strong><small>{{ booking.date|date:"D, M j" }} at {{ booking.start_time|time:"g:i A" }} · {{ booking.activity.name }}</small></div><span class="account-status">Confirmed</span></article>{% empty %}<p class="account-empty">No upcoming plans yet. Browse companions and find someone for your next outing.</p>{% endfor %}
+  </section>
+</section>
+{% endblock %}

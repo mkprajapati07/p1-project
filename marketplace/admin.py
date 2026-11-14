@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ActivityTag, Availability, Booking, CompanionProfile, ProfilePhoto, Report, Review
+from .models import AccountProfile, ActivityTag, Availability, Block, Booking, CompanionProfile, ProfilePhoto, Report, Review
 
 
 class ProfilePhotoInline(admin.TabularInline):
@@ -33,5 +33,13 @@ class ReportAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ActivityTag)
+admin.site.register(AccountProfile)
 admin.site.register(Availability)
 admin.site.register(Review)
+
+
+@admin.register(Block)
+class BlockAdmin(admin.ModelAdmin):
+    list_display = ("blocker", "target", "created_at")
+    search_fields = ("blocker__username", "target__username")
+    readonly_fields = ("blocker", "target", "created_at")

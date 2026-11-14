@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Companion dashboard | SideBySide{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'marketplace/account-dashboard.css' %}">{% endblock %}
+{% block content %}
+<section class="account-dashboard">
+  <header class="account-heading"><div><p class="eyebrow">COMPANION STUDIO</p><h1>Your company matters.</h1><p>Manage your listing and keep plans moving.</p></div>{% if profile %}<div class="account-actions"><a class="button button-outline" href="{% url 'manage_availability' %}">Set availability</a><a class="button button-dark" href="{% url 'my_plans' %}">Manage requests <span aria-hidden="true">↗</span></a></div>{% else %}<a class="button button-dark" href="{% url 'companion_apply' %}">Create your listing <span aria-hidden="true">↗</span></a>{% endif %}</header>
+  {% if profile %}<div class="listing-state"><span class="state-mark">{% if profile.status == 'approved' %}✓{% else %}…{% endif %}</span><div><strong>{{ profile.display_name }} · {{ profile.city }}</strong><small>Listing status: {{ profile.get_status_display }}{% if profile.is_paused %} · Paused{% endif %} · Selected plan: {{ profile.get_plan_display }}</small></div><a href="{% url 'profile_detail' profile.slug %}">Public profile <span aria-hidden="true">↗</span></a></div>{% endif %}
+  <div class="account-stats"><div><span>New requests</span><strong>{{ request_count }}</strong></div><div><span>Upcoming plans</span><strong>{{ upcoming_count }}</strong></div><div><span>Completed plans</span><strong>{{ completed_count }}</strong></div></div>
+  <section class="account-panel"><header><div><p class="eyebrow">BOOKING INBOX</p><h2>Requests needing a reply</h2></div><a href="{% url 'my_plans' %}">All requests <span aria-hidden="true">↗</span></a></header>
+    {% for booking in requests %}<article class="account-row"><div><strong>{{ booking.client.username }} · {{ booking.activity.name }}</strong><small>{{ booking.date|date:"D, M j" }} at {{ booking.start_time|time:"g:i A" }} · {{ booking.hours }} hours · {{ booking.location }}</small></div><span class="account-status">Requested</span></article>{% empty %}<p class="account-empty">{% if profile %}No booking requests right now.{% else %}Create a listing to start your verification and membership process.{% endif %}</p>{% endfor %}
+  </section>
+</section>
+{% endblock %}

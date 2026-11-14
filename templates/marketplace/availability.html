@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Availability | SideBySide{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'marketplace/account-dashboard.css' %}"><link rel="stylesheet" href="{% static 'marketplace/availability.css' %}">{% endblock %}
+{% block content %}
+<section class="account-dashboard">
+  <a class="back-link" href="{% url 'companion_dashboard' %}"><span>←</span> Companion dashboard</a>
+  <header class="account-heading"><div><p class="eyebrow">YOUR WEEKLY SCHEDULE</p><h1>Set your availability.</h1><p>Clients can only request a time inside one of these windows.</p></div></header>
+  <form method="post" class="availability-form">{% csrf_token %}{{ formset.management_form }}
+    {% if formset.non_form_errors %}<div class="form-errors">{{ formset.non_form_errors }}</div>{% endif %}
+    <div class="availability-head"><span>DAY</span><span>FROM</span><span>UNTIL</span><span>REMOVE</span></div>
+    {% for form in formset %}<div class="availability-row{% if form.DELETE.value %} availability-deleted{% endif %}">{{ form.id }}{{ form.weekday }}{{ form.start_time }}{{ form.end_time }}<label class="availability-delete">{{ form.DELETE }}<span>Remove</span></label>{% for error in form.non_field_errors %}<p class="form-errors">{{ error }}</p>{% endfor %}{{ form.errors }}</div>{% endfor %}
+    <div class="availability-footer"><p>Leave a row blank to ignore it. Add no more than 21 weekly windows.</p><button class="button button-dark" type="submit">Save availability <span aria-hidden="true">↗</span></button></div>
+  </form>
+</section>
+{% endblock %}

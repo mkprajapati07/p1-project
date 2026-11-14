@@ -3,11 +3,10 @@
 {% block content %}
 <section class="plans-page">
   <div class="plans-heading"><p class="eyebrow">YOUR SIDE OF THE STORY</p><h1>My plans</h1><p>Requests, replies, and the good times still ahead.</p></div>
-  <section class="plans-group"><div class="plans-group-heading"><h2>Requests for you</h2><span>{{ incoming|length }}</span></div>
+  {% if is_companion %}<section class="plans-group"><div class="plans-group-heading"><h2>Requests for you</h2><span>{{ incoming|length }}</span></div>
     {% for booking in incoming %}<article class="booking-row"><div class="booking-person"><span class="summary-avatar">{{ booking.client.username|first|upper }}</span><div><strong>{{ booking.client.username }}</strong><small>{{ booking.date|date:"D, M j" }} at {{ booking.start_time|time:"g:i A" }} · {{ booking.hours }} hr{% if booking.hours != 1 %}s{% endif %}</small></div></div><div class="booking-description"><span>{{ booking.activity.name }}</span><small>{{ booking.location }}</small></div><span class="status-pill status-{{ booking.status }}">{{ booking.get_status_display }}</span>{% if booking.status == 'requested' %}<div class="booking-actions"><form method="post" action="{% url 'update_booking' booking.id 'accept' %}">{% csrf_token %}<button class="button button-dark button-small" type="submit">Accept</button></form><form method="post" action="{% url 'update_booking' booking.id 'decline' %}">{% csrf_token %}<button class="text-button" type="submit">Decline</button></form></div>{% endif %}</article>{% empty %}<p class="plans-empty">No requests yet. New plans will show up here.</p>{% endfor %}
-  </section>
-  <section class="plans-group"><div class="plans-group-heading"><h2>Plans you requested</h2><span>{{ outgoing|length }}</span></div>
+  </section>{% else %}<section class="plans-group"><div class="plans-group-heading"><h2>Plans you requested</h2><span>{{ outgoing|length }}</span></div>
     {% for booking in outgoing %}<article class="booking-row"><div class="booking-person"><span class="summary-avatar">{{ booking.companion.display_name|first|upper }}</span><div><strong>{{ booking.companion.display_name }}</strong><small>{{ booking.date|date:"D, M j" }} at {{ booking.start_time|time:"g:i A" }} · {{ booking.hours }} hr{% if booking.hours != 1 %}s{% endif %}</small></div></div><div class="booking-description"><span>{{ booking.activity.name }}</span><small>{{ booking.location }}</small></div><span class="status-pill status-{{ booking.status }}">{{ booking.get_status_display }}</span>{% if booking.status == 'requested' or booking.status == 'accepted' %}<div class="booking-actions"><form method="post" action="{% url 'update_booking' booking.id 'cancel' %}">{% csrf_token %}<button class="text-button" type="submit">Cancel</button></form></div>{% endif %}</article>{% empty %}<p class="plans-empty">You haven't requested a plan yet. Your next outing is waiting.</p>{% endfor %}
-  </section>
+  </section>{% endif %}
 </section>
 {% endblock %}
