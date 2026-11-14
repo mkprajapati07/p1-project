@@ -6,8 +6,8 @@ import sys
 def main():
     if os.environ.get("VERCEL") != "1":
         return
-    if not os.environ.get("DATABASE_URL"):
-        raise RuntimeError("DATABASE_URL is required for a Vercel deployment.")
+    if not (os.environ.get("DATABASE_URL") or os.environ.get("POSTGRES_URL")):
+        raise RuntimeError("DATABASE_URL or POSTGRES_URL is required for a Vercel deployment.")
     subprocess.run([sys.executable, "manage.py", "migrate", "--noinput"], check=True)
 
 

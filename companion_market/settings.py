@@ -61,9 +61,9 @@ TEMPLATES = [
 WSGI_APPLICATION = "companion_market.wsgi.application"
 ASGI_APPLICATION = "companion_market.asgi.application"
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+DATABASE_URL = os.environ.get("DATABASE_URL") or os.environ.get("POSTGRES_URL")
 if IS_VERCEL and not DATABASE_URL:
-    raise ImproperlyConfigured("Set DATABASE_URL to a managed PostgreSQL database in Vercel.")
+    raise ImproperlyConfigured("Set DATABASE_URL or POSTGRES_URL to a managed PostgreSQL database in Vercel.")
 if DATABASE_URL:
     DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=60, ssl_require=True)}
 else:

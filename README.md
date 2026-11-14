@@ -20,7 +20,7 @@ Open http://127.0.0.1:8000. Create companion applications through **List as a co
 
 ## Deploy to Vercel
 
-Vercel Functions do not provide persistent writable SQLite storage. Attach a managed PostgreSQL database and set `DATABASE_URL` and a unique `DJANGO_SECRET_KEY` in the Vercel project environment variables for Production and Preview. Vercel runs `manage.py migrate` during builds through `build.py`; the deployment fails early if those production settings are missing. Vercel supplies deployment hostnames automatically, and the Django settings add them to `ALLOWED_HOSTS`.
+Vercel Functions do not provide persistent writable SQLite storage. Attach a managed PostgreSQL database and set `DATABASE_URL` (or `POSTGRES_URL`) and a unique `DJANGO_SECRET_KEY` in the Vercel project environment variables for Production and Preview. Vercel runs `manage.py migrate` during builds through `build.py`; the deployment fails early if those production settings are missing. Vercel supplies deployment hostnames automatically, and the Django settings add them to `ALLOWED_HOSTS`.
 
 ## Current scope
 
