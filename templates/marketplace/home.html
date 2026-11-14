@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Find your kind of company | SideBySide{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy"><p class="eyebrow"><span class="eyebrow-dot"></span> YOUR PLANS, BETTER SHARED</p><h1>Good company<br>changes <em>everything.</em></h1><p class="hero-sub">A plus-one for the little things, the big nights, and everything in between.</p>
+    <a class="hero-link" href="#companions">Meet your match <span aria-hidden="true">↓</span></a>
+  </div>
+  <div class="hero-visual" role="img" aria-label="Friends enjoying an afternoon coffee together">
+    <div class="hero-photo"></div><div class="floating-note"><span class="note-icon">✳</span><span><strong>Made for real life</strong><small>From coffee to concert nights</small></span></div>
+    <div class="hero-stamp">YOUR<br>PLUS ONE<br><span>↙</span></div>
+  </div>
+  <div class="hero-bottom"><span>01 / 03</span><span class="hero-rule"></span><span>GOOD COMPANY, ON YOUR TERMS</span></div>
+</section>
+
+<section class="discovery" id="companions">
+  <div class="section-heading"><div><p class="eyebrow">THE CITY IS YOURS</p><h2>Find someone to go with.</h2></div><p class="section-aside">One good plan can change your whole day.</p></div>
+  <form class="search-panel" method="get" action="{% url 'home' %}">
+    <label class="search-field city-field"><span>WHERE</span><input name="city" value="{{ filters.city|default:'' }}" placeholder="City or neighbourhood" autocomplete="address-level2"></label>
+    <label class="search-field"><span>THE PLAN</span><select name="activity"><option value="">Any activity</option>{% for tag in activities %}<option value="{{ tag.slug }}" {% if filters.activity == tag.slug %}selected{% endif %}>{{ tag.name }}</option>{% endfor %}</select></label>
+    <label class="search-field"><span>HOURLY BUDGET</span><select name="max_price"><option value="">Any price</option><option value="500" {% if filters.max_price == '500' %}selected{% endif %}>Up to ₹500</option><option value="1000" {% if filters.max_price == '1000' %}selected{% endif %}>Up to ₹1,000</option><option value="2000" {% if filters.max_price == '2000' %}selected{% endif %}>Up to ₹2,000</option></select></label>
+    <button class="search-button" type="submit" aria-label="Search companions"><span aria-hidden="true">⌕</span></button>
+    <details class="advanced-filters"><summary>More filters</summary><div class="advanced-grid">
+      <label class="search-field"><span>MINIMUM RATE</span><input type="number" name="min_price" min="0" value="{{ filters.min_price|default:'' }}" placeholder="₹ / hour"></label>
+      <label class="search-field"><span>GENDER</span><select name="gender"><option value="">Any</option>{% for value,label in gender_choices %}<option value="{{ value }}" {% if filters.gender == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label class="search-field"><span>LANGUAGE</span><input name="language" value="{{ filters.language|default:'' }}" placeholder="e.g. Hindi"></label>
+      <label class="search-field"><span>AVAILABLE DAY</span><select name="available_day"><option value="">Any day</option>{% for value,label in weekday_choices %}<option value="{{ value }}" {% if filters.available_day == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label class="search-field"><span>MINIMUM RATING</span><select name="rating"><option value="">Any rating</option>{% for score in "12345" %}<option value="{{ score }}" {% if filters.rating == score %}selected{% endif %}>{{ score }}+ stars</option>{% endfor %}</select></label>
+      <label class="search-field"><span>MEMBERSHIP BADGE</span><select name="plan"><option value="">Any plan</option>{% for value,label in plan_choices %}<option value="{{ value }}" {% if filters.plan == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    </div></details>
+  </form>
+  <div class="category-row" aria-label="Popular activities">
+    <span class="category-label">IN THE MOOD FOR</span>
+    <a href="?activity=dining#companions">Dinner <span>↗</span></a><a href="?activity=event-partner#companions">An event <span>↗</span></a><a href="?activity=travel-buddy#companions">A day out <span>↗</span></a><a href="?activity=movie-partner#companions">A movie <span>↗</span></a>
+  </div>
+</section>
+
+<section class="listings-section">
+  <div class="listing-toolbar"><div><p class="eyebrow">THOUGHTFUL PEOPLE, OPEN CALENDARS</p><h2>Meet the companions</h2></div><form method="get" class="sort-form">{% for key,value in filters.items %}{% if key != 'sort' and key != 'page' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}<label for="sort">Sort by</label><select name="sort" id="sort" onchange="this.form.submit()"><option value="relevance" {% if filters.sort == 'relevance' or not filters.sort %}selected{% endif %}>Recommended</option><option value="price" {% if filters.sort == 'price' %}selected{% endif %}>Price: low to high</option><option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Newest</option></select></form></div>
+  <div class="profile-grid">
+    {% for profile in profiles %}
+      <article class="profile-card">
+        <a class="profile-image profile-image-{{ forloop.counter0|add:'1' }}" href="{% url 'profile_detail' profile.slug %}" aria-label="View {{ profile.display_name }}'s profile">
+          {% if profile.photos.all %}<img src="{{ profile.photos.all.0.image.url }}" alt="{{ profile.display_name }}">{% else %}<span class="profile-initial">{{ profile.display_name|first|upper }}</span>{% endif %}
+          {% if profile.is_verified %}<span class="verified-pill"><span>✓</span> VERIFIED</span>{% endif %}
+          {% if profile.plan == 'gold' %}<span class="plan-pill gold-pill">GOLD</span>{% elif profile.plan == 'silver' %}<span class="plan-pill silver-pill">SILVER</span>{% endif %}
+          <span class="image-arrow" aria-hidden="true">↗</span>
+        </a>
+        <div class="profile-meta"><div><h3><a href="{% url 'profile_detail' profile.slug %}">{{ profile.display_name }}</a>{% if profile.is_verified %}<span class="name-check">✓</span>{% endif %}</h3><p>{{ profile.age }} · {{ profile.city }}</p></div><div class="rating">{% if profile.avg_rating %}<span>★</span> {{ profile.avg_rating|floatformat:1 }} <small>({{ profile.review_count }})</small>{% else %}<span class="new-label">NEW</span>{% endif %}</div></div>
+        <p class="profile-bio">{{ profile.bio|truncatechars:105 }}</p>
+        <div class="profile-card-bottom"><div class="tag-list">{% for tag in profile.activities.all|slice:":2" %}<span>{{ tag.name }}</span>{% endfor %}</div><p class="price">₹{{ profile.hourly_rate }}<small> / hr</small></p></div>
+      </article>
+    {% empty %}
+      <div class="empty-state"><span class="empty-spark">✳</span><h3>Your next plus-one is just around the corner.</h3><p>No companions match those filters yet. Try another city or activity.</p><a class="button button-outline" href="{% url 'home' %}#companions">Clear search</a></div>
+    {% endfor %}
+  </div>
+  {% if page_obj.paginator.num_pages > 1 %}<nav class="pagination" aria-label="Search results pages">{% if page_obj.has_previous %}<a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}" aria-label="Previous page">←</a>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" aria-label="Next page">→</a>{% endif %}</nav>{% endif %}
+</section>
+
+<section class="how-section" id="how-it-works">
+  <div class="how-intro"><p class="eyebrow">THOUGHTFULLY SIMPLE</p><h2>Make a plan.<br><em>Make it shared.</em></h2><p>No awkward algorithms. Just real people, clear expectations, and a good reason to get out there.</p><a href="#safety" class="underlined-link">Our safety promise <span>↗</span></a></div>
+  <div class="how-steps"><article><span class="step-number">01</span><div><h3>Find your person</h3><p>Browse verified profiles by city, shared interests, and the kind of day you have in mind.</p></div><span class="step-icon">⌕</span></article><article><span class="step-number">02</span><div><h3>Send a thoughtful request</h3><p>Pick a time and public meeting spot. Your companion will respond within 24 hours.</p></div><span class="step-icon">↗</span></article><article><span class="step-number">03</span><div><h3>Enjoy the real world</h3><p>Meet in public, enjoy the activity, and leave a review after your session.</p></div><span class="step-icon">✳</span></article></div>
+</section>
+<section class="safety-strip" id="safety"><span class="safety-symbol">+</span><p><strong>Always platonic. Always public.</strong> SideBySide is for social companionship only. Meet in public places, keep plans respectful, and report anything that doesn't feel right.</p><a href="#conduct">Our Code of Conduct <span>↗</span></a></section>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Log in | SideBySide{% endblock %}
+{% block content %}
+<section class="form-page"><div class="form-card"><p class="eyebrow">WELCOME BACK</p><h1>Good to see you.</h1><p class="form-intro">Log in to manage your plans and requests.</p>
+  <form method="post" class="stack-form">{% csrf_token %}{{ form.as_p }}{% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}<button class="button button-dark" type="submit">Log in <span aria-hidden="true">↗</span></button></form>
+  <p class="form-foot">New here? <a href="{% url 'signup' %}">Create an account</a></p>
+</div></section>
+{% endblock %}

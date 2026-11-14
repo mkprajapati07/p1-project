@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}List as a companion | SideBySide{% endblock %}
+{% block content %}
+<section class="form-page"><div class="form-card"><p class="eyebrow">YOUR STORY STARTS HERE</p><h1>Make good company your thing.</h1><p class="form-intro">Tell us a little about yourself. Every listing is reviewed before it goes live.</p>
+  <form method="post" class="stack-form">{% csrf_token %}{{ form.as_p }}<p class="form-note">Your date of birth is used for age verification and is never shown publicly. Listing approval and an active membership are required before your profile appears in search.</p><button class="button button-dark" type="submit">Send for review <span aria-hidden="true">↗</span></button></form>
+</div></section>
+{% endblock %}

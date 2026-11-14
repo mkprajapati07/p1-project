@@ -1,0 +1,42 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7f2">
+  <title>{% block title %}SideBySide | Good company, on your terms{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'marketplace/site.css' %}">
+  <link rel="stylesheet" href="{% static 'marketplace/marketplace.css' %}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="wordmark" href="{% url 'home' %}" aria-label="SideBySide home"><span class="brand-mark">s.</span> side<span>by</span>side</a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="{% url 'home' %}#companions">Find a companion</a>
+      <a href="{% url 'home' %}#how-it-works">How it works</a>
+      <a href="{% url 'companion_apply' %}">List as a companion</a>
+    </nav>
+    <div class="nav-actions">
+      {% if user.is_authenticated %}
+        <a class="text-button" href="{% url 'my_plans' %}">My plans</a>
+        <span class="nav-greeting">Hi, {{ user.username }}</span>
+        <form action="{% url 'logout' %}" method="post">{% csrf_token %}<button class="text-button" type="submit">Log out</button></form>
+      {% else %}
+        <a class="text-button sign-in" href="{% url 'login' %}">Log in</a>
+        <a class="button button-dark button-small" href="{% url 'signup' %}">Join free <span aria-hidden="true">↗</span></a>
+      {% endif %}
+    </div>
+  </header>
+  {% if messages %}<div class="messages" aria-live="polite">{% for message in messages %}<p class="message {{ message.tags }}">{{ message }}</p>{% endfor %}</div>{% endif %}
+  <main>{% block content %}{% endblock %}</main>
+  <footer class="footer">
+    <a class="wordmark" href="{% url 'home' %}"><span class="brand-mark">s.</span> side<span>by</span>side</a>
+    <p>Real people. Shared plans. Always platonic.</p>
+    <div><a href="{% url 'companion_apply' %}">List as a companion</a><a href="#safety">Safety first</a><a href="#conduct">Code of Conduct</a><span>© 2026 SideBySide</span></div>
+  </footer>
+</body>
+</html>

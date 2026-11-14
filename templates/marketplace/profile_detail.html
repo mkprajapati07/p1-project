@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.display_name }} | SideBySide{% endblock %}
+{% block content %}
+<div class="detail-wrap"><a class="back-link" href="{% url 'home' %}#companions"><span>←</span> All companions</a>
+  <section class="detail-grid"><div class="detail-photo profile-image profile-image-1">{% if profile.photos.all %}<img src="{{ profile.photos.all.0.image.url }}" alt="{{ profile.display_name }}">{% else %}<span class="profile-initial">{{ profile.display_name|first|upper }}</span>{% endif %}{% if profile.is_verified %}<span class="verified-pill"><span>✓</span> ID VERIFIED</span>{% endif %}</div>
+    <div class="detail-info"><p class="eyebrow">A NEW FRIEND IN {{ profile.city|upper }}</p><h1>{{ profile.display_name }}<span class="detail-age">, {{ profile.age }}</span></h1><p class="detail-location">{{ profile.city }}{% if profile.avg_rating %}<span> · </span>★ {{ profile.avg_rating|floatformat:1 }} ({{ profile.review_count }} reviews){% endif %}</p><p class="detail-bio">{{ profile.bio }}</p>
+      <div class="detail-facts"><div><span>LANGUAGES</span><p>{{ profile.languages }}</p></div><div><span>MINIMUM TIME</span><p>{{ profile.min_hours }} hours</p></div></div>
+      <div class="detail-activities"><span class="detail-label">GOOD FOR</span><div class="tag-list">{% for tag in profile.activities.all %}<span>{{ tag.name }}</span>{% endfor %}</div></div>
+      <div class="booking-cta"><p><strong>₹{{ profile.hourly_rate }}</strong><span> / hour</span></p><a class="button button-dark" href="{% url 'request_booking' profile.slug %}">Request a plan <span aria-hidden="true">↗</span></a></div>
+      <p class="detail-policy">Requests are commitment-free. You’ll only meet in a public place.</p>
+    </div>
+  </section>
+  <section class="reviews-section"><div><p class="eyebrow">KIND WORDS</p><h2>Notes from past plans</h2></div><div class="review-list">{% for item in reviews %}<article class="review-item"><div><span class="review-stars">{% for _ in "12345" %}{% if forloop.counter <= item.review.rating %}★{% endif %}{% endfor %}</span><span class="review-date">{{ item.review.created_at|date:"M Y" }}</span></div><p>{{ item.review.comment|default:"A lovely time together." }}</p><small>{{ item.client.username|first|upper }}. · confirmed plan</small></article>{% empty %}<p class="review-empty">No reviews yet. Every great plan starts somewhere.</p>{% endfor %}</div></section>
+</div>
+{% endblock %}

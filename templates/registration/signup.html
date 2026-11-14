@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Join SideBySide{% endblock %}
+{% block content %}
+<section class="form-page"><div class="form-card"><p class="eyebrow">A LITTLE MORE TOGETHER</p><h1>Make room for good company.</h1><p class="form-intro">Create a free account to request a companion for your next outing.</p>
+  <form method="post" class="stack-form">{% csrf_token %}{{ form.as_p }}<button class="button button-dark" type="submit">Create account <span aria-hidden="true">↗</span></button></form>
+  <p class="form-foot">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+</div></section>
+{% endblock %}

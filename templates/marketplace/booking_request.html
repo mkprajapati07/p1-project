@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Request a plan with {{ profile.display_name }}{% endblock %}
+{% block content %}
+<section class="form-page booking-page"><div class="form-card booking-card"><a class="back-link" href="{% url 'profile_detail' profile.slug %}"><span>←</span> Back to profile</a><p class="eyebrow">MAKE IT A PLAN</p><h1>Request a little company.</h1><p class="form-intro">You’re asking {{ profile.display_name }} to join you. They’ll have 24 hours to respond.</p>
+  <div class="booking-summary"><span class="summary-avatar">{{ profile.display_name|first|upper }}</span><div><strong>{{ profile.display_name }}</strong><small>{{ profile.city }} · ₹{{ profile.hourly_rate }} / hour</small></div></div>
+  <form method="post" class="stack-form">{% csrf_token %}{{ form.as_p }}<p class="form-note">Contact details stay private. Share a public meeting place only.</p><button class="button button-dark" type="submit">Send request <span aria-hidden="true">↗</span></button></form>
+</div></section>
+{% endblock %}
