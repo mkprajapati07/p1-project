@@ -3,8 +3,19 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-only-change-before-deploy")
-DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+DEBUG = os.environ.get("DJANGO_DEBUG", "0") == "1"
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    if host.strip()
+]
+for variable in ("VERCEL_URL", "VERCEL_BRANCH_URL", "VERCEL_PROJECT_PRODUCTION_URL"):
+    host = os.environ.get(variable, "").strip()
+    if host.startswith(("https://", "http://")):
+        host = host.split("://", 1)[1]
+    host = host.rstrip("/").split("/", 1)[0]
+    if host and host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(host)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
